@@ -1,15 +1,13 @@
 import { CustomAuthorizerEvent, CustomAuthorizerResult } from 'aws-lambda'
 import 'source-map-support/register'
-
+import  Axios from 'axios'
 import { verify, decode } from 'jsonwebtoken'
 import { createLogger } from '../../utils/logger'
-import * as JwksRsa from 'jwks-rsa';
-import { CertSigningKey } from 'jwks-rsa';
+// import * as JwksRsa from 'jwks-rsa';
 import { Jwt } from '../../auth/Jwt'
 import { JwtPayload } from '../../auth/JwtPayload'
 const logger = createLogger('auth')
 const jwksUrl = process.env.JWKS_ENDPOINT_URL
-const jwksClient = JwksRsa({ jwksUri: jwksUrl })
 // import { secretsManager } from 'middy/middlewares'
 // TODO: Provide a URL that can be used to download a certificate that can be used
 // to verify JWT token signature.
@@ -58,11 +56,45 @@ export const handler = async (
 }
 
 async function verifyToken(authHeader: string): Promise<JwtPayload> {
+
   const token = getToken(authHeader)
   const jwt: Jwt = decode(token, { complete: true }) as Jwt
-  //get cert sign from provided url
-  const cert = await jwksClient.getSigningKey(jwt.header.kid) as CertSigningKey
-  return verify(token, cert.getPublicKey(), { algorithms: ['RS256'] }) as JwtPayload;
+
+  let res = await Axios.get(jwksUrl, {
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': "*",
+      'Access-Control-Allow-Credentials': true,
+    }
+  });
+  let key = await getSigningKey(res.data.keys, jwt.header.kid);
+
+  return verify(token, key.publicKey, { algorithms: ['RS256'] }) as JwtPayload
+}
+const getSigningKey = async (keys, kid) => {
+  const signingKeys = keys.filter(key => key.use === 'sig' // JWK property `use` determines the JWK is for signing
+      && key.kty === 'RSA' // We are only supporting RSA
+      && key.kid           // The `kid` must be present to be useful for later
+      && key.x5c && key.x5c.length // Has useful public keys (we aren't using n or e)
+    ).map(key => {
+      return { kid: key.kid, nbf: key.nbf, publicKey: certToPEM(key.x5c[0]) };
+    });
+  const signingKey = signingKeys.find(key => key.kid === kid);
+
+  if(!signingKey){
+    logger.error("No signing keys found")
+    throw new Error('Invalid signing keys')
+  }
+  logger.info("Signing keys created successfully ", signingKey)
+
+  return signingKey
+};
+
+const certToPEM = (cert) => {
+  cert = cert.match(/.{1,64}/g).join('\n');
+  cert = `-----BEGIN CERTIFICATE-----\n${cert}\n-----END CERTIFICATE-----\n`;
+  return cert;
 }
 
 function getToken(authHeader: string): string {
