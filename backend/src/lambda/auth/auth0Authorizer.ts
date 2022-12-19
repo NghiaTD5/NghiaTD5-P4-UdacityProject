@@ -17,6 +17,7 @@ const jwksUrl = 'https://dev-kmqb1zim.auth0.com/.well-known/jwks.json'
 export const handler = async (
   event: CustomAuthorizerEvent
 ): Promise<CustomAuthorizerResult> => {
+  logger.info('Event is:', event)
   logger.info('Authorizing a user', event.authorizationToken)
   try {
     const jwtToken = await verifyToken(event.authorizationToken)
@@ -70,6 +71,7 @@ async function verifyToken(authHeader: string): Promise<JwtPayload> {
 }
 
  function  getToken(authHeader: string): string {
+  logger.info("authHeader after authen is:", authHeader)
   if (!authHeader) throw new Error('No authentication header')
 
   if (!authHeader.toLowerCase().startsWith('bearer '))

@@ -24,7 +24,7 @@ provider:
   environment:
     TODOS_TABLE: Todos-${self:provider.stage}
     TODOS_CREATED_AT_INDEX: CreatedAtIndex
-    ATTACHMENT_S3_BUCKET: nhatq-project4-${self:provider.stage}
+    ATTACHMENT_S3_BUCKET: nghiatd5-project4-findy103-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
     JWKS_ENDPOINT_URL: https://dev-cj12vdbytjujofwl.us.auth0.com/.well-known/jwks.json
 
