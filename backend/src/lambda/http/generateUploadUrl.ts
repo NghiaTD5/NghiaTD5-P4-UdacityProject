@@ -6,10 +6,15 @@ import { cors, httpErrorHandler } from 'middy/middlewares'
 import { v4 as uuidv4 } from 'uuid';
 import { getUserId } from '../utils'
 import { updateAttachmentUrl } from '../../businessLogic/todos'
+import { createLogger } from '../../utils/logger'
+
+const logger = createLogger('createTodo');
 
 const attachmentUtils = new AttachmentUtils()
 export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+
+    logger.info('Handling generateUploadUrl with event', {event});
     const todoId = event.pathParameters.todoId
     // TODO: Return a presigned URL to upload a file for a TODO item with the provided id
     const attachmentId = uuidv4()

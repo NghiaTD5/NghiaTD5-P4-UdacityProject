@@ -1,5 +1,4 @@
 import * as AWS from 'aws-sdk'
-// import * as AWSXRay from 'aws-xray-sdk'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 import { createLogger } from '../utils/logger'
 import { TodoItem } from '../models/TodoItem'
@@ -18,7 +17,9 @@ export class TodosAccess {
         private readonly todosTable = process.env.TODOS_TABLE) {
     }
 
+    // handle get infor todo by User ID
     async getTodosByUserID(userId: string): Promise<TodoItem[]> {
+        logger.info('call get Todos By UserID');
         const params = {
           TableName: this.todosTable,
           KeyConditionExpression: 'userId = :userId',
@@ -34,8 +35,8 @@ export class TodosAccess {
       }
 
       
-
-      async createTodo(todo: TodoItem): Promise<TodoItem> {
+    // handle create todo
+    async createTodo(todo: TodoItem): Promise<TodoItem> {
         logger.info('call createTodo');
         await this.docClient.put({
             TableName: this.todosTable,
@@ -45,7 +46,8 @@ export class TodosAccess {
         return todo
     }
 
-    async updateTodo(userId: string, todoId: string, todoUpdate: TodoUpdate): Promise<TodoUpdate> {
+    // handle update todo by user ID 
+    async updateTodobyUserID(userId: string, todoId: string, todoUpdate: TodoUpdate): Promise<TodoUpdate> {
         logger.info('call updateTodo');
         var params = {
             TableName: this.todosTable,
@@ -66,7 +68,7 @@ export class TodosAccess {
         logger.info('update to do success!: ' + todoUpdate);
         return todoUpdate
     }
-
+    // update Attachment
     async updateAttachmentUrl(userId: string, todoId: string, uploadUrl: string): Promise<string> {
         logger.info('call TodosAccess.updateTodo'+ uploadUrl);
         var params = {
@@ -86,6 +88,7 @@ export class TodosAccess {
         return uploadUrl
     }
     
+    // handle delete todo by UserID
     async deleteTodo(userId: string, todoId: string) {
         logger.info('call deleteTodo');
         var params = {

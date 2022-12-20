@@ -7,7 +7,7 @@ import { createLogger } from '../../utils/logger'
 import { Jwt } from '../../auth/Jwt'
 import { JwtPayload } from '../../auth/JwtPayload'
 const logger = createLogger('auth')
-const jwksUrl = process.env.JWKS_ENDPOINT_URL
+const jwksUrl = 'https://dev-16bkgb066t5ebpys.us.auth0.com/.well-known/jwks.json'
 // import { secretsManager } from 'middy/middlewares'
 // TODO: Provide a URL that can be used to download a certificate that can be used
 // to verify JWT token signature.
