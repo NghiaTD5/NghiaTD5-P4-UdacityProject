@@ -13,6 +13,22 @@ export const handler = middy(
     // TODO: Implement creating a new TODO item
     logger.info('Handling createTodo event', {event});
     const newTodo: CreateTodoRequest = JSON.parse(event.body)
+    if(newTodo.name.trim()=="" || !newTodo.name){
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          error: `name is a required field`
+        })
+      }
+    }
+    if(newTodo.dueDate.trim()=="" || !newTodo.dueDate){
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          error: `Due is a required field`
+        })
+      }
+    }
     const todo = await createTodo(event, newTodo)
     return {
       statusCode: 201,
